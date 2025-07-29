@@ -1,5 +1,6 @@
+# fruit_total_service/main.py
 import logging
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import httpx
 from itertools import count
@@ -7,10 +8,10 @@ from itertools import count
 logging.basicConfig(level=logging.INFO)
 app = FastAPI(title="Fruit Total Price Service")
 
-# 调用价格服务的地址
+# 价格服务地址
 PRICE_SERVICE_URL = "http://localhost:9000"
 
-# 全局计数器，首次调用时 id=1，后续递增
+# 全局计数器，首次调用时 id=10001，后续递增
 total_id_counter = count(10001)
 
 class TotalPriceResponse(BaseModel):
@@ -40,13 +41,14 @@ async def fetch_price_data(fruit: str, month: str) -> dict:
     response_model=TotalPriceResponse,
     summary="Get total price for a given fruit, month and quantity"
 )
-async def get_total_price(fruit: str, month: str, quantity: float):
+async def get_total_price(fruit: str, month: str, quantity: float, request: Request):
     # 生成本次请求的唯一 ID
     id_value = next(total_id_counter)
-    # 获取价格服务的数据
+    # 从价格服务获取数据
     price_data = await fetch_price_data(fruit, month)
     unit_price = price_data.get("fmp")
-    environmet_value = price_data.get("environmet", "8000")
+    # 动态获取当前端口号
+    environment = str(request.url.port)
     total_price = unit_price * quantity
 
     return TotalPriceResponse(
@@ -56,5 +58,5 @@ async def get_total_price(fruit: str, month: str, quantity: float):
         Emp=unit_price,
         quantity=quantity,
         totalPrice=total_price,
-        environmet=environmet_value
+        environmet=environment
     )

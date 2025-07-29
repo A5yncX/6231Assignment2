@@ -1,7 +1,7 @@
 # fruit_price_service/main.py
 import sqlite3
 import logging
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from pathlib import Path
 from itertools import count
@@ -16,7 +16,7 @@ ALLOWED_MONTHS = {
     "jul", "aug", "sep", "oct", "nov", "dec"
 }
 
-# 全局计数器，首次调用时 id=1，后续递增
+# 全局计数器，首次调用时 id=10001，后续递增
 price_id_counter = count(10001)
 
 logging.basicConfig(level=logging.INFO)
@@ -57,16 +57,19 @@ def query_price(fruit: str, month: str) -> float:
     response_model=PriceResponse,
     summary="Get unit price for a given fruit in a given month"
 )
-async def get_fruit_price(fruit: str, month: str):
+async def get_fruit_price(fruit: str, month: str, request: Request):
     # 生成本次请求的唯一 ID
     id_value = next(price_id_counter)
     fruit_lower = fruit.lower()
     month_lower = month.lower()
+    # 查询数据库
     price = query_price(fruit_lower, month_lower)
+    # 动态获取端口号作为 environment
+    environment = str(request.url.port)
     return PriceResponse(
         id=id_value,
         fruit=fruit_lower,
         month=month_lower,
         fmp=price,
-        environmet="8000"
+        environmet=environment
     )
