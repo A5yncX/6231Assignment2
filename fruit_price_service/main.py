@@ -4,11 +4,9 @@ from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from pathlib import Path
 
-# 项目根目录下的 SQLite 文件路径
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATABASE_PATH = BASE_DIR / "comp6231.sqlite3"
 
-# 允许的月份列
 ALLOWED_MONTHS = {
     "jan", "feb", "mar", "apr", "may", "jun",
     "jul", "aug", "sep", "oct", "nov", "dec"
@@ -16,6 +14,7 @@ ALLOWED_MONTHS = {
 
 logging.basicConfig(level=logging.INFO)
 app = FastAPI(title="Fruit Month Price Service")
+
 
 class PriceResponse(BaseModel):
     fruit: str
@@ -43,6 +42,7 @@ def query_price(fruit: str, month: str) -> float:
     except sqlite3.Error as e:
         logging.error(f"SQLite error: {e}")
         raise HTTPException(status_code=500, detail="Internal database error")
+
 
 @app.get(
     "/fruit-price/fruit/{fruit}/month/{month}",

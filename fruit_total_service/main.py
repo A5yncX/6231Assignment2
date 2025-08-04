@@ -6,7 +6,7 @@ import httpx
 logging.basicConfig(level=logging.INFO)
 app = FastAPI(title="Fruit Total Price Service")
 
-# 价格服务地址，指向 FMP 服务的端口 8000
+
 PRICE_SERVICE_URL = "http://localhost:8000"
 
 class TotalPriceResponse(BaseModel):
